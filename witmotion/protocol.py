@@ -29,9 +29,7 @@ class TimeMessage(ReceiveMessage):
 
     @classmethod
     def parse(cls, body):
-        (year2, month, day, hour, minute, second, millisecond) = struct.unpack(
-            "<BBBBBBH", body
-        )
+        (year2, month, day, hour, minute, second, millisecond) = struct.unpack("<BBBBBBH", body)
         year4 = year2 + 1970
         d = datetime(
             year=year4,
@@ -112,14 +110,11 @@ class AngleMessage(ReceiveMessage):
         self.version = version
 
     def __str__(self):
-        return (
-            "angle message - roll:%0.1f pitch:%0.1f yaw:%0.1f version:%s"
-            % (
-                self.roll,
-                self.pitch,
-                self.yaw,
-                self.version,
-            )
+        return "angle message - roll:%0.1f pitch:%0.1f yaw:%0.1f version:%s" % (
+            self.roll,
+            self.pitch,
+            self.yaw,
+            self.version,
         )
 
     @classmethod
@@ -176,10 +171,30 @@ class QuaternionMessage(ReceiveMessage):
         return cls(q=q)
 
 
+class LocationMessage(ReceiveMessage):
+    code = 0x55
+
+    def __init__(self, lon, lat):
+        self.lon = lon
+        self.lat = lat
+
+    def __str__(self):
+        return "location message - lon:%s lat:%s" % (self.lon / 1e7, self.lat / 1e7)
+
+    @classmethod
+    def parse(cls, body):
+        (lon, lat) = struct.unpack("<ii", body)
+        return cls(
+            lon=lon,
+            lat=lat,
+        )
+
+
 receive_messages = {
     cls.code: cls
     for cls in (
         TimeMessage,
+        LocationMessage,
         AccelerationMessage,
         AngularVelocityMessage,
         AngleMessage,

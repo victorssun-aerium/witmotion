@@ -63,9 +63,7 @@ class IMU:
     """
 
     def __init__(self, path: str = "/dev/ttyUSB0", baudrate: int = 9600):
-        self.ser = serial.Serial(
-            path, baudrate=baudrate, timeout=0.1, exclusive=True
-        )
+        self.ser = serial.Serial(path, baudrate=baudrate, timeout=0.1, exclusive=True)
         # self.ser.reset_output_buffer()
         # self.ser.write(b"\x00" * 5)
 
@@ -84,6 +82,8 @@ class IMU:
         self.last_yaw = None
         self.last_mag = None
         self.last_q = None
+        self.last_lon = None
+        self.last_lat = None
 
     def close(self) -> None:
         """
@@ -142,7 +142,6 @@ class IMU:
         log.debug("starting rx loop, initial state: idle")
 
         while not self.should_exit:
-
             if state == ReceiveState.idle:
                 sync = self.ser.read(size=1)
                 if sync:
@@ -159,9 +158,7 @@ class IMU:
                     code = code[0]
                     if code in protocol.receive_messages:
                         message_cls = protocol.receive_messages[code]
-                        log.debug(
-                            "state: header -> payload, got code 0x%x", code
-                        )
+                        log.debug("state: header -> payload, got code 0x%x", code)
                         state = ReceiveState.payload
                     else:
                         # log.warning("invalid command code: 0x%x", code)
@@ -227,6 +224,9 @@ class IMU:
         """
         return self.last_q
 
+    def get_location(self):
+        return self.last_lon, self.last_lat
+
     def save_configuration(self) -> None:
         """
         Save the currently running configuration to the device's nonvolatile
@@ -284,8 +284,7 @@ class IMU:
         """
         if not isinstance(mode, CalibrationMode):
             raise ValueError(
-                "Argument to set_calibration_mode() must be a "
-                "CalibrationMode instance, received: %r" % mode
+                "Argument to set_calibration_mode() must be a " "CalibrationMode instance, received: %r" % mode
             )
         if mode == CalibrationMode.none:
             pass
@@ -296,9 +295,7 @@ class IMU:
         else:
             raise ValueError("invalid calibration mode: %r" % mode)
 
-    def set_installation_direction(
-        self, direction: InstallationDirection
-    ) -> None:
+    def set_installation_direction(self, direction: InstallationDirection) -> None:
         """
         Set the current installation direction.
         """
