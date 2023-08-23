@@ -172,14 +172,14 @@ class QuaternionMessage(ReceiveMessage):
 
 
 class LocationMessage(ReceiveMessage):
-    code = 0x55
+    code = 0x57
 
     def __init__(self, lon, lat):
         self.lon = lon
         self.lat = lat
 
     def __str__(self):
-        return "location message - lon:%s lat:%s" % (self.lon / 1e7, self.lat / 1e7)
+        return "location message - lon:%s lat:%s" % (self.lon, self.lat)
 
     @classmethod
     def parse(cls, body):
