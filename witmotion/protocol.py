@@ -178,8 +178,29 @@ class LocationMessage(ReceiveMessage):
         self.lon = lon
         self.lat = lat
 
+    def calculate_dms(self, value, is_longitude):
+        dd = value / 10000000
+        mm_mmmmmm = (value % 10000000) / 100000
+        mm = int(mm_mmmmmm)
+        ss = (mm_mmmmmm - mm) * 60
+
+        if is_longitude and dd > 180:
+            dd -= 360
+
+        return dd, mm, ss
+
     def __str__(self):
-        return "location message - lon:%s lat:%s" % (self.lon, self.lat)
+        lon_dd, lon_mm, lon_ss = self.calculate_dms(self.lon, True)
+        lat_dd, lat_mm, lat_ss = self.calculate_dms(self.lat, False)
+        return "location message - lon: %d° %d' %.2f\" lat: %d° %d' %.2f\"" % (
+            lon_dd,
+            lon_mm,
+            lon_ss,
+            lat_dd,
+            lat_mm,
+            lat_ss,
+        )
+        # return "location message - lon: %s lat: %s" % (self.lon, self.lat)
 
     @classmethod
     def parse(cls, body):
@@ -298,6 +319,7 @@ class Register(Enum):
     q1 = 0x52
     q2 = 0x53
     q3 = 0x54
+    location = 0x57
     gyro = 0x63
 
     unknown_config_cmd = 0x69

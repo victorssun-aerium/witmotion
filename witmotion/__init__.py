@@ -311,6 +311,14 @@ class IMU:
             )
         )
 
+    def set_return_location_package(self, enabled: bool):
+        self.send_config_command(
+            protocol.ConfigCommand(
+                register=protocol.Register.location,
+                data=0x01 if enabled else 0x00,
+            )
+        )
+
     def toggle_sleep(self) -> None:
         """
         Toggle device sleep mode. If the device is currently active, it will go

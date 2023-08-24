@@ -21,9 +21,7 @@ def three_tuple(s):
             return tuple(int(el) for el in parts)
         except ValueError:
             pass
-    raise argparse.ArgumentTypeError(
-        "'%s' is not a valid 3-tuple. Example: 22,-7,16" % s
-    )
+    raise argparse.ArgumentTypeError("'%s' is not a valid 3-tuple. Example: 22,-7,16" % s)
 
 
 def main(argv=sys.argv):
@@ -31,17 +29,11 @@ def main(argv=sys.argv):
     p.add_argument("--verbose", action="store_true", help="Verbose debugging")
 
     # Basic device connectivity
-    p.add_argument(
-        "--path", default="/dev/ttyUSB0", help="Path to serial device"
-    )
-    p.add_argument(
-        "--baudrate", type=int, default=9600, help="Serial baud rate"
-    )
+    p.add_argument("--path", default="/dev/ttyUSB0", help="Path to serial device")
+    p.add_argument("--baudrate", type=int, default=9600, help="Serial baud rate")
 
     # To change configuration
-    p.add_argument(
-        "--reset", action="store_true", help="Reset to default configuration"
-    )
+    p.add_argument("--reset", action="store_true", help="Reset to default configuration")
     p.add_argument(
         "--set-calibration-mode",
         type=protocol.CalibrationMode,
@@ -62,15 +54,16 @@ def main(argv=sys.argv):
     p.add_argument(
         "--set-installation-direction",
         type=protocol.InstallationDirection,
-        choices=tuple(
-            choice.name for choice in protocol.InstallationDirection
-        ),
+        choices=tuple(choice.name for choice in protocol.InstallationDirection),
         help="Set installation direction",
     )
-    p.add_argument("--set-baudrate", type=int, help="Set new baud rate")
     p.add_argument(
-        "--set-update-rate", type=float, help="Set new update rate (Hz)"
+        "--set-return-location-package",
+        type=bool,
+        help="Set whether location package should be returned",
     )
+    p.add_argument("--set-baudrate", type=int, help="Set new baud rate")
+    p.add_argument("--set-update-rate", type=float, help="Set new update rate (Hz)")
     p.add_argument(
         "--set-messages",
         help="Comma-separated list of message classes to send",
@@ -90,21 +83,15 @@ def main(argv=sys.argv):
         type=three_tuple,
         help="Set magnetic bias tuple (x,y,z)",
     )
-    p.add_argument(
-        "--toggle-sleep", action="store_true", help="Toggle sleep mode"
-    )
-    p.add_argument(
-        "--save", action="store_true", help="Save running configuration to NVM"
-    )
+    p.add_argument("--toggle-sleep", action="store_true", help="Toggle sleep mode")
+    p.add_argument("--save", action="store_true", help="Save running configuration to NVM")
 
     opts = p.parse_args(argv[1:])
 
     if coloredlogs:
         coloredlogs.install(level="debug" if opts.verbose else "info")
     else:
-        logging.basicConfig(
-            level=logging.DEBUG if opts.verbose else logging.INFO
-        )
+        logging.basicConfig(level=logging.DEBUG if opts.verbose else logging.INFO)
 
     log.debug("opening IMU at %s baudrate %s", opts.path, opts.baudrate)
 
@@ -124,6 +111,9 @@ def main(argv=sys.argv):
 
     if opts.set_installation_direction:
         imu.set_installation_direction(opts.set_installation_direction)
+
+    if opts.set_return_location_package:
+        imu.set_return_location_package(opts.set_return_location_package)
 
     if opts.set_baudrate:
         imu.set_baudrate(opts.set_baudrate)
